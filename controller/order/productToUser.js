@@ -8,7 +8,7 @@ const orderProduct = async (req, res) => {
     if (req.user.balance >= product.price) {
       const balance = req.user.balance - product.price;
       console.log(req.user.products.includes(productId));
-      if (req.user.products.includes(productId)) {
+      if (!req.user.products.includes(productId)) {
         const user = await authSchema.updateOne(
           { _id: req.user._id },
           { balance, $push: { products: productId } },
