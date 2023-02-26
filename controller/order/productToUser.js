@@ -9,7 +9,6 @@ const orderProduct = async (req, res) => {
       const balance = req.user.balance - product.price;
       console.log(req.user.products.includes(productId));
       if (req.user.products.includes(productId)) {
-        //   const user = { message: "just checking" };
         const user = await authSchema.updateOne(
           { _id: req.user._id },
           { balance, $push: { products: productId } },
