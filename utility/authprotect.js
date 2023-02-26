@@ -10,7 +10,7 @@ exports.authenticate = async (req, res, next) => {
     const token = req.headers.authorization.split(" ")[1];
     if (!token) {
       res.status(403).json({
-        error: { message: "You are Not Authenticated, please login" },
+        error: { message: "You are Not Authenticated" },
       });
     }
     try {
@@ -20,6 +20,10 @@ exports.authenticate = async (req, res, next) => {
     } catch (error) {
       res.status(500).json({ error: { message: error.message } });
     }
+  } else {
+    res
+      .status(401)
+      .json({ message: "Sorry...! you don't have access, please login" });
   }
 };
 

@@ -9,6 +9,11 @@ const authSchema = new Schema(
     lastName: {
       type: String,
     },
+    age: {
+      type: Number,
+      min: 1,
+      required: true,
+    },
     email: {
       type: String,
       required: true,
@@ -22,6 +27,9 @@ const authSchema = new Schema(
       enum: ["user", "admin", "approver", "supervisor"],
       default: "user",
     },
+    balance: {
+      type: Number,
+    },
     isApproverApproved: {
       type: Boolean,
       default: false,
@@ -30,6 +38,12 @@ const authSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    products: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "products",
+      },
+    ],
   },
   { timestamps: true }
 );

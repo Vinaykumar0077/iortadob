@@ -1,4 +1,4 @@
-const authSchema = require("../Model/auth");
+const authSchema = require("../../Model/auth");
 
 const registerController = async (req, res) => {
   try {

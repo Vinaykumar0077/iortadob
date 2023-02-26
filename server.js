@@ -3,6 +3,8 @@ const { PORT, DATABASE_URL } = require("./config");
 const { connectDataBase } = require("./config/dataBase");
 
 const authRoutes = require("./router/auth");
+const productsRoutes = require("./router/products");
+const ordersRoutes = require("./router/order");
 
 let app = express();
 
@@ -14,6 +16,8 @@ const startServer = () => {
     app.use(express.urlencoded({ extended: true }));
 
     app.use("/api/auth", authRoutes);
+    app.use("/api/products", productsRoutes);
+    app.use("/api/order", ordersRoutes);
 
     app.listen(PORT, (err) => {
       if (err) throw err;
