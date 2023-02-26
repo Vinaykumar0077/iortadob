@@ -3,22 +3,47 @@ const ProductSchema = require("../../Model/product");
 
 const orderProduct = async (req, res) => {
   try {
-    const { id, productId } = req.body;
+    const { productId } = req.body;
     const product = await ProductSchema.findById(productId);
     if (req.user.balance >= product.price) {
       const balance = req.user.balance - product.price;
-      const user = await authSchema.updateOne(
-        { _id: req.user._id },
-        { balance, $push: { products: productId } },
-        { new: true, useFindAndModify: false }
-      );
-      if (user) {
-        res.status(200).json(user);
+      console.log(req.user.products.includes(productId));
+      if (req.user.products.includes(productId)) {
+        //   const user = { message: "just checking" };
+        const user = await authSchema.updateOne(
+          { _id: req.user._id },
+          { balance, $push: { products: productId } },
+          { new: true, useFindAndModify: false }
+        );
+        if (user) {
+          res.status(200).json(user);
+        } else {
+          res.status(400).json({ message: "error while ordering product" });
+        }
       } else {
-        res.status(400).json({ message: "error while ordering product" });
+        res.status(400).json({ message: "product already ordered" });
       }
     } else {
       res.status(500).json({ message: "Insufficient Balance" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteOrder = async (req, res) => {
+  try {
+    const { productId } = req.body;
+    const product = await ProductSchema.findById(productId);
+    const balance = +req.user.balance + +product.price;
+    const user = await authSchema.updateOne(
+      { _id: req.user._id },
+      { balance, $pull: { products: productId } }
+    );
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(400).json({ message: "error while ordering product" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -40,4 +65,4 @@ const orderSummery = async (req, res) => {
   }
 };
 
-module.exports = { orderProduct, orderSummery };
+module.exports = { orderProduct, orderSummery, deleteOrder };
