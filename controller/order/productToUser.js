@@ -71,7 +71,7 @@ const orderSummery = async (req, res) => {
     const orderData = await authSchema
       .findById(req.user._id)
       .populate("products");
-    if (orderData) {
+    if (orderData.products.length) {
       res.status(200).json(orderData);
     } else {
       res.status(400).json({ message: "you don't have any order" });
