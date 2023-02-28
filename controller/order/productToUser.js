@@ -3,27 +3,44 @@ const ProductSchema = require("../../Model/product");
 
 const orderProduct = async (req, res) => {
   try {
-    const { productId } = req.body;
-    const product = await ProductSchema.findById(productId);
-    if (req.user.balance >= product.price) {
-      const balance = req.user.balance - product.price;
-      console.log(req.user.products.includes(productId));
-      if (!req.user.products.includes(productId)) {
-        const user = await authSchema.updateOne(
-          { _id: req.user._id },
-          { balance, $push: { products: productId } },
-          { new: true, useFindAndModify: false }
-        );
-        if (user) {
-          res.status(200).json(user);
-        } else {
-          res.status(400).json({ message: "error while ordering product" });
-        }
+    const { productIds } = req.body;
+    const products = await ProductSchema.find({ _id: productIds }).sort({
+      price: 1,
+    });
+    const suggestionProducts = [];
+    let totalValue = 0;
+    const validProducts = products.filter((product) => {
+      totalValue = +totalValue + +product.price;
+      if (req.user.balance > totalValue) {
+        suggestionProducts.push(product.name);
+        return product;
       } else {
-        res.status(400).json({ message: "product already ordered" });
+        totalValue = totalValue - product.price;
+      }
+    });
+    if (validProducts.length) {
+      if (validProducts.length == products.length) {
+        const orderedProducts = await Promise.all(
+          products.map(async (product) => {
+            req.user.balance = req.user.balance - product.price;
+            await authSchema.updateOne(
+              { _id: req.user._id },
+              { balance: req.user.balance, $push: { products: product._id } }
+            );
+            return product;
+          })
+        );
+        res
+          .status(200)
+          .json({ message: "ordered products successfully", orderedProducts });
+      } else {
+        res.status(400).json({
+          message: `you are balance is less to buy all the products`,
+          suggestion: `we got you, you can still buy products ${suggestionProducts}`,
+        });
       }
     } else {
-      res.status(500).json({ message: "Insufficient Balance" });
+      res.status(400).json({ message: "insufficient balance" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -11,12 +11,6 @@ const ProductSchema = new Schema(
     price: {
       type: String,
     },
-    users: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "auth",
-      },
-    ],
   },
   { timestamps: true }
 );
