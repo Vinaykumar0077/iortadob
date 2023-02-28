@@ -49,23 +49,31 @@ const orderProduct = async (req, res) => {
 
 const deleteOrder = async (req, res) => {
   try {
-    const { productId } = req.body;
-    const product = await ProductSchema.findById(productId);
-    const balance = +req.user.balance + +product.price;
-    const user = await authSchema.updateOne(
-      { _id: req.user._id },
-      { balance, $pull: { products: productId } }
+    const { productIds } = req.body;
+    const products = await ProductSchema.find({ _id: productIds }).sort({
+      price: 1,
+    });
+    const removedProducts = await Promise.all(
+      products.map(async (product) => {
+        req.user.balance = +req.user.balance + +product.price;
+        await authSchema.updateOne(
+          { _id: req.user._id },
+          { balance: req.user.balance, $pull: { products: product._id } }
+        );
+        return product;
+      })
     );
-    if (user) {
-      res.status(200).json(user);
+    if (removedProducts.length) {
+      res
+        .status(200)
+        .json({ message: "Order Cancelled Successfully", removedProducts });
     } else {
-      res.status(400).json({ message: "error while ordering product" });
+      res.status(400).json({ message: "error while cancelling order" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 const orderSummery = async (req, res) => {
   try {
     const orderData = await authSchema
